@@ -1,0 +1,441 @@
+LAMMPS (17 Nov 2016)
+# Input file for nanocutting of Cubic SiC with a diamond tool
+# Chris Fung, April 2013
+
+# input variables
+# -potential (choose the version of Tersoff potential used, options=y94/EA/TersoffScr)
+# -v (cutting velocity = v * 100 (m s^-1 in x-direction))
+# -n the number of successive cutting
+
+#variable respath string ${v}x100_m_s-1_Groove${grooveDepth}T${grooveTan}_SiC_${potential}
+variable respath string ${v}x100_m_s-1_SiC_${potential}_${n}
+variable respath string 4.00x100_m_s-1_SiC_${potential}_${n}
+variable respath string 4.00x100_m_s-1_SiC_EA_${n}
+variable respath string 4.00x100_m_s-1_SiC_EA_7
+
+print "${respath}"
+4.00x100_m_s-1_SiC_EA_7
+shell mkdir ${respath}
+shell mkdir 4.00x100_m_s-1_SiC_EA_7
+WARNING: Shell command 'mkdir' failed with error 'File exists' (../input.cpp:1264)
+shell mkdir ${respath}/log_files
+shell mkdir 4.00x100_m_s-1_SiC_EA_7/log_files
+WARNING: Shell command 'mkdir' failed with error 'File exists' (../input.cpp:1264)
+shell mkdir ${respath}/restart_files
+shell mkdir 4.00x100_m_s-1_SiC_EA_7/restart_files
+WARNING: Shell command 'mkdir' failed with error 'File exists' (../input.cpp:1264)
+shell mkdir ${respath}/ovito_analysis-results
+shell mkdir 4.00x100_m_s-1_SiC_EA_7/ovito_analysis-results
+WARNING: Shell command 'mkdir' failed with error 'File exists' (../input.cpp:1264)
+shell chmod 774 ${respath}
+shell chmod 774 4.00x100_m_s-1_SiC_EA_7
+shell chmod 774 ${respath}/log_files
+shell chmod 774 4.00x100_m_s-1_SiC_EA_7/log_files
+shell chmod 774 ${respath}/restart_files
+shell chmod 774 4.00x100_m_s-1_SiC_EA_7/restart_files
+shell chmod 777 ${respath}/ovito_analysis_results
+shell chmod 777 4.00x100_m_s-1_SiC_EA_7/ovito_analysis_results
+WARNING: Shell command returned with non-zero status (../input.cpp:1336)
+
+#package cuda gpu/node 1 0
+#package omp 2 force/neigh
+# ------------------------ INITIALIZATION ----------------------------
+units 		metal
+dimension	3
+boundary	s	s	p
+atom_style	atomic
+
+variable a equal 4.3667
+variable b equal 3.571
+variable c equal $a/$b
+variable c equal 4.3667/$b
+variable c equal 4.3667/3.571
+
+lattice fcc $a
+lattice fcc 4.3667
+Lattice spacing in x,y,z = 4.3667 4.3667 4.3667
+region		whole block 0 99 0 47 0 9
+create_box	3 whole
+Created orthogonal box = (0 0 0) to (432.303 205.235 39.3003)
+  2 by 1 by 1 MPI processor grid
+
+read_data dia_mol1_$n.dat add append group gpCTmob #extra/atom/types 1
+read_data dia_mol1_7.dat add append group gpCTmob 
+  orthogonal box = (-306.938 -52.0232 0) to (990.21 205.255 39.3003)
+  2 by 1 by 1 MPI processor grid
+  reading atoms ...
+  79853 atoms
+  reading velocities ...
+  79853 velocities
+#group gpCTmob type 1
+print "read1"
+read1
+read_data dia_mol2_$n.dat add append group gpCTtsbd
+read_data dia_mol2_7.dat add append group gpCTtsbd
+  orthogonal box = (-306.938 -52.0232 0) to (990.21 190.467 39.3003)
+  2 by 1 by 1 MPI processor grid
+  reading atoms ...
+  4785 atoms
+  reading velocities ...
+  4785 velocities
+#group gpCTtsbd subtract all gpCTmob
+print "read2"
+read2
+read_data dia_mol3_$n.dat add append group gpCTbd
+read_data dia_mol3_7.dat add append group gpCTbd
+  orthogonal box = (-306.938 -52.0232 0) to (990.21 190.467 39.3003)
+  2 by 1 by 1 MPI processor grid
+  reading atoms ...
+  4950 atoms
+  reading velocities ...
+  4950 velocities
+#group gpCTbd subtract all gpCTmob gpCTtsbd
+#print "read3"
+group gpDia type 1
+89588 atoms in group gpDia
+
+print "diamond tool created"
+diamond tool created
+
+
+
+read_data 0_mol4_$n.dat add append group gpWPmob0 shift -100 0 0
+read_data 0_mol4_7.dat add append group gpWPmob0 shift -100 0 0
+  orthogonal box = (-100.042 -0.0132843 0) to (417.116 133.939 39.3003)
+  2 by 1 by 1 MPI processor grid
+  reading atoms ...
+  25192 atoms
+  reading velocities ...
+  25192 velocities
+#group gpWPmob0 subtract all gpDia gpSiCX
+read_data 0_mol5_$n.dat add append group gpWPtsbd0 shift -100 0 0
+read_data 0_mol5_7.dat add append group gpWPtsbd0 shift -100 0 0
+  orthogonal box = (-100.042 -0.0132843 0) to (417.038 133.928 39.3003)
+  2 by 1 by 1 MPI processor grid
+  reading atoms ...
+  3798 atoms
+  reading velocities ...
+  3798 velocities
+#group gpWPtsbd0 subtract all gpDia gpSiCX gpWPmob0
+read_data 0_mol6_$n.dat add append group gpWPbd0 shift -100 0 0
+read_data 0_mol6_7.dat add append group gpWPbd0 shift -100 0 0
+  orthogonal box = (-100.042 -0.0132843 0) to (417.038 133.928 39.3003)
+  2 by 1 by 1 MPI processor grid
+  reading atoms ...
+  4950 atoms
+  reading velocities ...
+  4950 velocities
+#group gpWPbd0 subtract all gpDia gpSiCX gpWPmob0 gpWPtsbd0
+group gpSiC0 union gpWPmob0 gpWPtsbd0 gpWPbd0
+33940 atoms in group gpSiC0
+
+read_data wp_mol4_$n.dat add append group gpWPmobX #extra/atom/types 2 3
+read_data wp_mol4_7.dat add append group gpWPmobX 
+  orthogonal box = (-306.938 -52.0232 0) to (990.21 190.467 39.3003)
+  2 by 1 by 1 MPI processor grid
+  reading atoms ...
+  41407 atoms
+  reading velocities ...
+  41407 velocities
+#group gpWPmobX type 2 3
+read_data wp_mol5_$n.dat add append group  gpWPtsbdX
+read_data wp_mol5_7.dat add append group  gpWPtsbdX
+  orthogonal box = (-306.938 -52.0232 0) to (990.21 190.467 39.3003)
+  2 by 1 by 1 MPI processor grid
+  reading atoms ...
+  2596 atoms
+  reading velocities ...
+  2596 velocities
+#group gpWPtsbdX subtract all gpDia gpWPmobX
+read_data wp_mol6_$n.dat add append group  gpWPbdX
+read_data wp_mol6_7.dat add append group  gpWPbdX
+  orthogonal box = (-306.938 -52.0232 0) to (990.21 190.467 39.3003)
+  2 by 1 by 1 MPI processor grid
+  reading atoms ...
+  4482 atoms
+  reading velocities ...
+  4482 velocities
+#group gpWPbdX subtract all gpDia gpWPmobX gpWPtsbdX
+group gpSiCX union gpWPmobX gpWPtsbdX gpWPbdX
+48485 atoms in group gpSiCX
+
+group gpWPmobE union gpWPmob0 gpWPtsbd0
+28990 atoms in group gpWPmobE
+
+# groups atoms
+group gpSiC type 2 3
+82425 atoms in group gpSiC
+
+group gpWPbd union gpWPbd0 gpWPbdX
+9432 atoms in group gpWPbd
+group gpWPtsbd union gpWPtsbd0 gpWPtsbdX
+6394 atoms in group gpWPtsbd
+group gpWPmob union gpWPmob0 gpWPmobX
+66599 atoms in group gpWPmob
+
+group mobile union gpWPmob gpCTmob
+146452 atoms in group mobile
+
+print "Workpiece created"
+Workpiece created
+
+#-------------------------------------------------
+
+
+# define the mass of atoms
+mass 1 12 #.0107 # C (g/mol)
+mass 2 28 #.0855 # Si (g/mol)
+mass 3 12 #.0107 # C (g/mol)
+
+group Si type 2
+42447 atoms in group Si
+group C type 1 3
+129566 atoms in group C
+
+lattice fcc 4.3667 origin 0 0 0
+Lattice spacing in x,y,z = 4.3667 4.3667 4.3667
+
+
+
+# ------------------------ FORCE FIELDS ------------------------------
+if "${potential} == TersoffScr" then "pair_style atomistica TersoffScr" else "pair_style	tersoff"
+pair_style	tersoff
+ #variable index string ${potential}
+if "${potential} == EA"  then "pair_coeff	* * SiC_Erhart-Albe.tersoff C Si C" elif "${potential} == y94"  "pair_coeff	* * SiC_1994.tersoff C Si C" elif "${potential} == TersoffScr"  "pair_coeff	* * C Si C" else "print 'choose the variable -potential to be y94 or EA'" & quit
+pair_coeff	* * SiC_Erhart-Albe.tersoff C Si C
+
+
+# ------------------------- SETTINGS ---------------------------------
+######################################
+# EQUILIBRATION
+
+# set temperature at 300 K
+#compute myCTtemp gpCTmob0 temp
+compute myWPtemp0 gpWPtsbd0 temp
+compute myWPtemp gpWPmob0 temp
+
+fix 2 gpWPtsbd0 nvt temp 300.0 300.0 0.05 #iso 1.0 1.0 0.5
+fix_modify 2 temp myWPtemp0
+WARNING: Temperature for fix modify is not for group all (../fix_nh.cpp:1389)
+
+reset_timestep	0
+timestep 0.0005 # set 1 femtosecond per step
+
+fix 3 gpWPbd move linear 0 0 0
+fix 4 gpCTbd move linear 0 0 0
+
+fix 5 gpWPmob0 nve
+fix 6 gpWPmob0 temp/rescale 5 300.0 300.0 10 0.8
+
+fix 10 all balance 100  0.9 shift xy 10 1.05 out tmp.balance.log
+fix 13 all property/atom mol
+WARNING: Fix property/atom mol or charge or rmass w/out ghost communication (../fix_property_atom.cpp:123)
+
+
+
+set group gpCTmob mol 1
+  79853 settings made for mol
+set group gpCTtsbd mol 2
+  4785 settings made for mol
+set group gpCTbd mol 3
+  4950 settings made for mol
+
+set group gpWPmob mol 4
+  66599 settings made for mol
+set group gpWPtsbd mol 5
+  6394 settings made for mol
+set group gpWPbd mol 6
+  9432 settings made for mol
+
+
+# Display thermo
+
+thermo 	100
+#compute		eCSP all centro/atom fcc
+#compute atomke all ke/atom
+dump	 e0dumpCSP all custom 1 ${respath}/dump.cutsic_eq.*.lammpstrj id type mol element x y z vx vy vz # c_atomke
+dump	 e0dumpCSP all custom 1 4.00x100_m_s-1_SiC_EA_7/dump.cutsic_eq.*.lammpstrj id type mol element x y z vx vy vz 
+dump_modify e0dumpCSP element C Si C
+
+# backup initial state and every 1000 steps
+write_restart ${respath}/restart_files/cut_sic_eq.restart.0000
+write_restart 4.00x100_m_s-1_SiC_EA_7/restart_files/cut_sic_eq.restart.0000
+Neighbor list info ...
+  1 neighbor list requests
+  update every 1 steps, delay 10 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 4.96
+  ghost atom cutoff = 4.96
+  binsize = 2.48 -> bins = 210 55 16
+restart 1000 ${respath}/restart_files/cut_sic_eq.restart
+restart 1000 4.00x100_m_s-1_SiC_EA_7/restart_files/cut_sic_eq.restart
+
+
+
+# Run for at least 10 picosecond
+print "start run equilibration"
+start run equilibration
+
+#minimize 1.0e-4 1.0e-6 100 1000
+run 1000
+Memory usage per processor = 56.4129 Mbytes
+Step Temp E_pair E_mol TotEng Press Volume 
+       0    904.95858   -1110069.8            0   -1089948.7    86800.709    2771993.2 
+     100    895.73784   -1110238.5            0   -1090322.4    86393.284    2771993.2 
+     200    895.88646   -1110247.4            0   -1090327.9    86131.872    2771993.2 
+     300     894.9635   -1110259.5            0   -1090360.6    85794.081    2771993.2 
+     400    895.26105   -1110261.5            0     -1090356    85479.851    2771993.2 
+     500    895.00128   -1110250.3            0   -1090350.6    84915.379    2771993.2 
+     600    894.89452   -1110243.5            0   -1090346.2    84576.614    2771993.2 
+     700     895.4974   -1110253.1            0   -1090342.4    84325.714    2771993.2 
+     800    894.92831   -1110237.4            0   -1090339.3    84089.368    2771993.2 
+     900    894.85595   -1110232.4            0   -1090335.9    84021.941    2771993.2 
+    1000     895.5115     -1110245            0     -1090334    84109.063    2771993.2 
+Loop time of 1068.75 on 2 procs for 1000 steps with 172013 atoms
+
+Performance: 0.040 ns/day, 593.749 hours/ns, 0.936 timesteps/s
+89.6% CPU use with 2 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 540.33     | 603.37     | 666.42     | 256.6 | 56.46
+Neigh   | 3.3393     | 3.8163     | 4.2933     |  24.4 |  0.36
+Comm    | 4.2755     | 67.193     | 130.11     | 767.6 |  6.29
+Output  | 377.49     | 382.35     | 387.21     |  24.9 | 35.78
+Modify  | 2.9277     | 3.9034     | 4.8791     |  49.4 |  0.37
+Other   |            | 8.111      |            |       |  0.76
+
+Nlocal:    86006.5 ave 86007 max 86006 min
+Histogram: 1 0 0 0 0 0 0 0 0 1
+Nghost:    27130 ave 27181 max 27079 min
+Histogram: 1 0 0 0 0 0 0 0 0 1
+Neighs:    0 ave 0 max 0 min
+Histogram: 2 0 0 0 0 0 0 0 0 0
+FullNghs:  5.68761e+06 ave 7.06294e+06 max 4.31229e+06 min
+Histogram: 1 0 0 0 0 0 0 0 0 1
+
+Total # of neighbors = 11375226
+Ave neighs/atom = 66.13
+Neighbor list builds = 10
+Dangerous builds = 0
+#run 400000
+
+
+
+
+######################################
+
+# # DEFORMATION
+#
+#
+# unfix 2
+# undump e0dumpCSP
+#
+# compute myCTtemp gpCTmob temp
+# compute myWPtemp gpWPmob temp/partial 0 1 1
+# compute myCTTStemp gpCTtsbd temp
+# compute myWPTStemp gpWPtsbd temp/partial 0 1 1
+# #compute myCTpress gpCTmob pressure myCTtemp
+# #compute myWPpress gpWPmob pressure myWPtemp
+#
+# timestep 0.0005 # set 1 femtosecond per step
+#
+# fix 1 gpWPtsbd nvt temp 300.0 300.0 0.05 #iso 1.0 1.0 0.5
+# fix_modify 1 temp myWPTStemp
+# fix 2 gpCTtsbd nvt temp 300.0 300.0 0.05 #iso 1.0 1.0 0.5
+# fix_modify 2 temp myCTTStemp
+#
+# unfix 3
+# unfix 4
+#
+# #fix 3 gpWPbd setforce 0.0 0.0 0.0 #move linear 0 0 0
+# #fix 4 gpCTbd setforce 0.0 0.0 0.0 # units box sum no
+# #velocity gpCTbd set -1.0 0.0 0.0 units box
+# fix 3 gpWPbd move linear 0 0 0  units box
+# fix 4 gpCTbd move linear 0 0 0 units box  # cutting speed = v * 100 (m s^-1 in the x-direction)
+#
+# fix 5 mobile nve
+#
+# fix 10 all balance 10 1.05 shift xy 100 1.05 out ${respath}/log_files/tmp.balance.log
+#
+# #fix 14 gpDia wall/reflect xlo 800.0 xhi 850.0 units box
+#
+# compute ke all ke/atom
+# fix 12 all ave/atom 10 50 500 c_ke
+# #fix 13 all property/atom mol
+#
+# #set group gpCTmob mol 1
+# #set group gpCTtsbd mol 2
+# #set group gpCTbd mol 3
+#
+# #set group gpWPmob mol 4
+# #set group gpWPtsbd mol 5
+# #set group gpWPbd mol 6
+#
+# shell cp log.lammps ${respath}/log_files/
+# log ${respath}/log_files/cut_sic_re_eq.log
+#
+# # Re-equilibrium
+#
+# thermo 	500
+# thermo_style custom step c_myCTtemp c_myWPtemp press etotal fmax fnorm
+#
+# #run 0 # 20 ps
+#
+# print "Complete re-equilibrium"
+#
+# # start cutting
+#
+# log ${respath}/log_files/cut_sic_cut.log
+# reset_timestep 0
+#
+# unfix 3
+# fix 3 gpWPbd move linear $v 0 0 units box  # cutting speed = v * 100 (m s^-1 in the x-direction)
+#
+# # Output strain and stress info to file
+# # for units metal, pressure is in [bars] = 100 [kPa] = 1/10000 [GPa]
+# # p2, p3, p4 are in GPa
+#
+#
+# dump	 0dumpCSP all custom  1 ${respath}/dump.cutsic.*.lammpstrj id type mol x y z vx vy vz f_12
+#   #c_atomdisp[4] c_atomstres[1] c_atomstres[2] c_atomstres[3] c_atomstres[4] c_atomstres[5] c_atomstres[6]
+# dump_modify 0dumpCSP element C Si C
+#
+# write_restart cut_sic_re_eq.0000.restart
+# restart 10000 ${respath}/restart_files/cut_sic.*.restart
+#
+# # For the cutting advancement of 20 nm
+# variable Nstep equal ceil(400000/$v)
+# #run ${Nstep}
+# #run   133333  # if vx = -3.0
+# #run	200000  # if vx = -2.0
+# #run   400000  # if vx = -1.0
+
+
+
+######################################
+# SIMULATION DONE
+
+#shell echo "Cutting simulation has completed -- ${respath}" | mail -s "LAMMPS - simulation done" ***REMOVED***
+#shell curl -u ***REMOVED***: https://api.pushbullet.com/v2/pushes -d type=note -d device_iden="***REMOVED***" -d title="Push from KhrisU" -d body="LAMMPS -- Simulation is finish"
+
+
+jump ../in.senddone.lmp
+### copy the following line to the end of your lammps script
+##
+##  jump ../in.senddone.lmp
+##
+###
+
+######################################
+# SIMULATION DONE
+print "All done"
+All done
+
+## Send notification via email
+# shell echo "Cutting simulation has completed -- cut_sic_eq" | mail -s "LAMMPS - simulation done" ***REMOVED***
+
+# Send notification via pushbullet
+shell curl -u ***REMOVED***: https://api.pushbullet.com/v2/pushes -d type=note -d device_iden="***REMOVED***" -d title="Push from KhrisU" -d body="LAMMPS -- Simulation is finish"
+Total wall time: 0:17:55
