@@ -46,7 +46,3 @@ An MD simulation analysis was conducted to compare the cutting response and the 
  
 ## Recommended Books and References
 1. [Fung, K. Y., Tang, C. Y., and Cheung, C. F. (2017). Molecular dynamics analysis of the effect of surface flaws of diamond tools on tool wear in nanometric cutting. Computational Materials Science, 133, 60–70.](http://www.sciencedirect.com/science/article/pii/S0927025617301180)
- 
-## Repositories
-1. https://github.com/chriskyfung/lammps_CutSiC_LR15C10_3.0v_part1
-2. https://github.com/chriskyfung/lammps_CutSiC_LR15C10_3.0v_part2
